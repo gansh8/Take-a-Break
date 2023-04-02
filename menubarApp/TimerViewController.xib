@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="21507" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="21507"/>
+        <capability name="Image references" minToolsVersion="12.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="TimerViewController" customModule="menubarApp" customModuleProvider="target">
+            <connections>
+                <outlet property="progressIndicator" destination="NDp-RC-mA7" id="OeK-Qj-nLF"/>
+                <outlet property="timeLabel" destination="NxG-rW-d68" id="YOb-nh-Xqv"/>
+                <outlet property="view" destination="Hz6-mo-xeY" id="0bl-1N-x8E"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <customView id="Hz6-mo-xeY">
+            <rect key="frame" x="0.0" y="0.0" width="300" height="406"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+            <subviews>
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="NxG-rW-d68">
+                    <rect key="frame" x="119" y="213" width="63" height="26"/>
+                    <textFieldCell key="cell" lineBreakMode="clipping" title="00:00" id="4ww-gv-t96">
+                        <font key="font" metaFont="system" size="22"/>
+                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <customView translatesAutoresizingMaskIntoConstraints="NO" id="NDp-RC-mA7" customClass="CircularProgressBarView" customModule="menubarApp" customModuleProvider="target">
+                    <rect key="frame" x="50" y="126" width="200" height="200"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="200" id="XM0-rc-fyK"/>
+                        <constraint firstAttribute="height" constant="200" id="mgd-9e-EVF"/>
+                    </constraints>
+                </customView>
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="FVX-lk-PYJ">
+                    <rect key="frame" x="63" y="90" width="175" height="16"/>
+                    <textFieldCell key="cell" lineBreakMode="clipping" title="After work, take a 30s break" id="aJf-0P-KgA">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="lR1-vb-A8l">
+                    <rect key="frame" x="264" y="372" width="32" height="33"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="list.bullet.indent" catalog="system" imagePosition="overlaps" alignment="center" lineBreakMode="truncatingTail" state="on" imageScaling="proportionallyDown" inset="2" id="kyd-Cs-ppg">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="system"/>
+                    </buttonCell>
+                    <connections>
+                        <action selector="showMenu:" target="-2" id="qiz-uu-adW"/>
+                    </connections>
+                </button>
+                <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="6Di-0d-U8T">
+                    <rect key="frame" x="134" y="39" width="32" height="32"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" imagePosition="overlaps" alignment="center" lineBreakMode="truncatingTail" state="on" imageScaling="proportionallyUpOrDown" inset="2" id="wlr-aK-B14">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="system"/>
+                        <imageReference key="image" image="pause.circle" catalog="system" symbolScale="large"/>
+                    </buttonCell>
+                </button>
+                <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ymm-3V-xih">
+                    <rect key="frame" x="77" y="40.5" width="32.5" height="32"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" imagePosition="overlaps" alignment="center" lineBreakMode="truncatingTail" state="on" imageScaling="proportionallyUpOrDown" inset="2" id="O5n-wV-aWi">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="system"/>
+                        <imageReference key="image" image="arrow.clockwise" catalog="system" symbolScale="large"/>
+                    </buttonCell>
+                </button>
+                <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cYG-7r-rrO">
+                    <rect key="frame" x="188" y="40" width="32" height="32"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" imagePosition="overlaps" alignment="center" lineBreakMode="truncatingTail" state="on" imageScaling="proportionallyUpOrDown" inset="2" id="uay-Rx-f3z">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="system"/>
+                        <imageReference key="image" image="forward.circle" catalog="system" symbolScale="large"/>
+                    </buttonCell>
+                </button>
+            </subviews>
+            <constraints>
+                <constraint firstItem="FVX-lk-PYJ" firstAttribute="top" secondItem="NDp-RC-mA7" secondAttribute="bottom" constant="20" id="7M8-b2-zaR"/>
+                <constraint firstItem="FVX-lk-PYJ" firstAttribute="centerX" secondItem="Hz6-mo-xeY" secondAttribute="centerX" id="TBj-JH-658"/>
+                <constraint firstItem="NDp-RC-mA7" firstAttribute="top" secondItem="Hz6-mo-xeY" secondAttribute="top" constant="80" id="got-OY-2Am"/>
+                <constraint firstItem="NDp-RC-mA7" firstAttribute="centerX" secondItem="Hz6-mo-xeY" secondAttribute="centerX" id="pVJ-bM-j07"/>
+                <constraint firstItem="NxG-rW-d68" firstAttribute="centerX" secondItem="Hz6-mo-xeY" secondAttribute="centerX" id="uXq-2L-Pfa"/>
+                <constraint firstItem="NxG-rW-d68" firstAttribute="centerY" secondItem="NDp-RC-mA7" secondAttribute="centerY" id="xs5-6v-sMa"/>
+            </constraints>
+            <point key="canvasLocation" x="129" y="107"/>
+        </customView>
+    </objects>
+    <resources>
+        <image name="arrow.clockwise" catalog="system" width="18" height="21"/>
+        <image name="forward.circle" catalog="system" width="20" height="20"/>
+        <image name="list.bullet.indent" catalog="system" width="19" height="12"/>
+        <image name="pause.circle" catalog="system" width="20" height="20"/>
+    </resources>
+</document>
