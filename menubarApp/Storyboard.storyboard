@@ -7,19 +7,6 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--View Controller-->
-        <scene sceneID="TFF-r4-lf6">
-            <objects>
-                <viewController id="ylj-Jt-0pN" sceneMemberID="viewController">
-                    <view key="view" id="6t9-jq-hKZ">
-                        <rect key="frame" x="0.0" y="0.0" width="480" height="270"/>
-                        <autoresizingMask key="autoresizingMask"/>
-                    </view>
-                </viewController>
-                <customObject id="tdg-ic-Yy0" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="853" y="-606"/>
-        </scene>
         <!--Window Controller-->
         <scene sceneID="N9s-ee-7nI">
             <objects>
@@ -519,7 +506,7 @@
                                         <subviews>
                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="qfu-pE-z8V">
                                                 <rect key="frame" x="18" y="8" width="48" height="16"/>
-                                                <textFieldCell key="cell" lineBreakMode="clipping" title="Deafult" id="WIh-FW-HHq">
+                                                <textFieldCell key="cell" lineBreakMode="clipping" title="Default" id="WIh-FW-HHq">
                                                     <font key="font" usesAppearanceFont="YES"/>
                                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -557,12 +544,12 @@
                                         <rect key="frame" x="0.0" y="214" width="302" height="5"/>
                                     </box>
                                     <colorWell fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="hcr-5S-kjr">
-                                        <rect key="frame" x="188" y="168" width="44" height="28"/>
+                                        <rect key="frame" x="188" y="150" width="44" height="28"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <color key="color" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                     </colorWell>
                                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="gsu-Jw-I3y">
-                                        <rect key="frame" x="35" y="174" width="113" height="16"/>
+                                        <rect key="frame" x="35" y="156" width="113" height="16"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <textFieldCell key="cell" lineBreakMode="clipping" title="Background Color" id="U0f-UC-W6c">
                                             <font key="font" usesAppearanceFont="YES"/>
@@ -585,7 +572,7 @@
                                         <color key="color" red="0.05813049898" green="0.055541899059999997" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                     </colorWell>
                                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="k0o-3f-OrO">
-                                        <rect key="frame" x="35" y="126" width="30" height="16"/>
+                                        <rect key="frame" x="35" y="116" width="30" height="16"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <textFieldCell key="cell" lineBreakMode="clipping" title="Text" id="VNG-7o-sui">
                                             <font key="font" metaFont="system"/>
@@ -594,7 +581,7 @@
                                         </textFieldCell>
                                     </textField>
                                     <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="AhJ-Ve-sd9">
-                                        <rect key="frame" x="162" y="123" width="96" height="21"/>
+                                        <rect key="frame" x="162" y="113" width="96" height="21"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" title="Take a Break.!" drawsBackground="YES" id="hda-nd-WVA">
                                             <font key="font" metaFont="system"/>
