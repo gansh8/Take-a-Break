@@ -20,6 +20,18 @@ class PrefSplitVC: NSSplitViewController {
     func selected(_ value: PreferenceName) {
         (self.prefContent.viewController as? PrefContentVC)?.selected(value)
     }
+
+    override func keyDown(with event: NSEvent) {
+        if event.modifierFlags.contains(.command) {
+            if event.keyCode == 12 {
+                NSApplication.shared.terminate(nil)
+            } else if event.keyCode == 13 {
+                self.view.window?.close()
+            } else {
+                super.keyDown(with: event)
+            }
+        }
+    }
 }
 
 enum PreferenceName {

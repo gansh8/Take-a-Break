@@ -14,9 +14,10 @@ protocol PomodoroTimerDelegate: AnyObject {
 
 class PomodoroTimer {
     weak var delegate: PomodoroTimerDelegate?
-    var duration: TimeInterval
-    var remainingTime: TimeInterval
-    var timer: Timer?
+    private var duration: TimeInterval
+    private var remainingTime: TimeInterval
+    private var timer: Timer?
+    private var isPaused = false
 
     init(duration: TimeInterval) {
         self.duration = duration
@@ -43,5 +44,16 @@ class PomodoroTimer {
         timer?.invalidate()
         timer = nil
         remainingTime = duration
+    }
+
+    func pause() {
+        if !self.isPaused {
+            self.isPaused = true
+            timer?.invalidate()
+            timer = nil
+        } else {
+            self.isPaused = false
+            self.start()
+        }
     }
 }

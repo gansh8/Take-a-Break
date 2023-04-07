@@ -21,11 +21,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem.button?.action = #selector(statusItemClicked)
 
         // Create and start Pomodoro timer
-        pomodoroTimer = PomodoroTimer(duration: 25 * 60)
+        pomodoroTimer = PomodoroTimer(duration: TimeInterval(Preferences.workTimeMins * 60))
         pomodoroTimer.delegate = self
         pomodoroTimer.start()
 
         timerViewController = TimerViewController(nibName: "TimerViewController", bundle: nil)
+        timerViewController.timerDelegate = pomodoroTimer
     }
 
     @objc func statusItemClicked(sender: NSStatusBarButton) {
@@ -48,7 +49,11 @@ extension AppDelegate: PomodoroTimerDelegate {
         // Update button title with remaining time
         let minutes = Int(remainingTime) / 60
         let seconds = Int(remainingTime) % 60
-        statusItem.button?.title = String(format: "%02d:%02d", minutes, seconds)
+        if Preferences.showTimeInMenuBar {
+            statusItem.button?.title = String(format: "%02d:%02d", minutes, seconds)
+        } else {
+            statusItem.button?.title = ""
+        }
         timerViewController.updateTimeLabel(String(format: "%02d:%02d", minutes, seconds))
 //        timerViewController.updateProgressIndicator(remainingTime / Double(pomodoroTimer.duration))
         timerViewController.updateProgressIndicator(Double(seconds)  / 60.0 * 100.0)

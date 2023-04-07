@@ -9,6 +9,8 @@ import Cocoa
 
 class TimerViewController: NSViewController {
 
+    weak var timerDelegate: PomodoroTimer?
+
     @IBOutlet weak var timeLabel: NSTextField!
     @IBOutlet weak var progressIndicator: CircularProgressBarView!
 
@@ -39,11 +41,7 @@ class TimerViewController: NSViewController {
 
     @objc func onMenuItemSelected(_ sender: NSMenuItem) {
         if sender.tag == 1 {
-            let storyboard = NSStoryboard(name: "Storyboard", bundle: nil)
-            guard let windowController = storyboard.instantiateController(withIdentifier: "FullScreenWindowController") as? FullScreenWindowController else {
-                fatalError("Unable to load preferences window controller.")
-            }
-            windowController.showWindow(self)
+            FullScreenWindowController.showBreakWindow()
         } else if sender.tag == 3 {
             popover.performClose(nil)
             NSApplication.shared.terminate(nil)
@@ -57,15 +55,35 @@ class TimerViewController: NSViewController {
         print("Menu item selected: \(sender.title)")
     }
 
+    @IBAction func resetTimer(_ sender: NSButton) {
+        self.timerDelegate?.stop()
+        self.timerDelegate?.start()
+    }
+
+    @IBAction func pauseTimer(_ sender: NSButton) {
+        self.timerDelegate?.pause()
+        sender.image = sender.state == .on ? NSImage(systemSymbolName: "play.circle", accessibilityDescription: nil) : NSImage(systemSymbolName: "pause.circle", accessibilityDescription: nil)
+    }
+
+    @IBAction func nextTimer(_ sender: NSButton) {
+        FullScreenWindowController.showBreakWindow()
+        self.timerDelegate?.stop()
+        self.timerDelegate?.start()
+    }
+    
     func setupPopover() {
         // Create popover
-        popover = NSPopover()
+        popover = TimerPopover()
         popover.contentViewController = self
         popover.behavior = .transient
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
+    }
+
+    override func viewDidAppear() {
+        self.view.window?.makeFirstResponder(popover)
     }
 
     func updateTimeLabel(_ timeString: String) {
@@ -126,5 +144,25 @@ class FullScreenWindowController: NSWindowController {
         window?.toolbar = nil
         window?.makeFirstResponder(nil)
         window?.alphaValue = 1.0
+    }
+
+    static func showBreakWindow() {
+        let storyboard = NSStoryboard(name: "Storyboard", bundle: nil)
+        guard let windowController = storyboard.instantiateController(withIdentifier: "FullScreenWindowController") as? FullScreenWindowController else {
+            fatalError("Unable to load preferences window controller.")
+        }
+        windowController.showWindow(nil)
+    }
+}
+
+class TimerPopover: NSPopover {
+    override func keyDown(with event: NSEvent) {
+        if event.modifierFlags.contains(.command) {
+            if event.keyCode == 12 || event.keyCode == 13 {
+                NSApplication.shared.terminate(nil)
+            } else {
+                super.keyDown(with: event)
+            }
+        }
     }
 }

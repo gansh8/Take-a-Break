@@ -13,7 +13,24 @@ class PrefContentVC: NSViewController {
     @IBOutlet weak var generalView: NSView!
     @IBOutlet weak var appearanceView: NSView!
     @IBOutlet weak var aboutView: NSView!
+    @IBOutlet weak var scheduleView: NSView!
     @IBOutlet weak var versionLabel: NSTextField!
+
+    // Switches in General Section
+    @IBOutlet weak var launchAtStartup: NSSwitch!
+    @IBOutlet weak var showTimeInMenu: NSSwitch!
+    @IBOutlet weak var playSoundAtEnd: NSSwitch!
+    @IBOutlet weak var fadeInBreak: NSSwitch!
+    @IBOutlet weak var pauseAtMouseIdle: NSSwitch!
+    @IBOutlet weak var enableStandup: NSSwitch!
+
+    // Appearance
+    @IBOutlet weak var colorWell: NSColorWell! // Break Appearance.
+    @IBOutlet weak var breakMessageTF: NSTextField!
+
+    // Schedule
+    @IBOutlet weak var workTimeMins: NSTextField!
+    @IBOutlet weak var breakTimeSeconds: NSTextField!
 
     private var appearanceList: [Appearance] = [
         Appearance(name: "Break 1", elements: [], skipButton: NSButton.skipButton(#selector(PrefContentVC.skipButtonClicked))),
@@ -29,6 +46,9 @@ class PrefContentVC: NSViewController {
         super.viewDidLoad()
         self.setupGeneralView()
         self.setupAboutView()
+        self.setupAppearanceView()
+        self.setupScheduleView()
+        self.hideAllViews()
         self.accountView.isHidden = false
     }
 
@@ -37,6 +57,7 @@ class PrefContentVC: NSViewController {
         self.generalView.isHidden = true
         self.aboutView.isHidden = true
         self.appearanceView.isHidden = true
+        self.scheduleView.isHidden = true
     }
 
     func selected(_ value: PreferenceName) {
@@ -49,7 +70,7 @@ class PrefContentVC: NSViewController {
         case .account:
             self.accountView.isHidden = false
         case .customise:
-            self.generalView.isHidden = true
+            self.scheduleView.isHidden = false
         case .appearance:
             self.appearanceView.isHidden = false
         }
@@ -57,7 +78,71 @@ class PrefContentVC: NSViewController {
     }
 
     func setupGeneralView() {
-        self.generalView.isHidden = true
+        // Disable switches that not implemented.
+        self.launchAtStartup.isEnabled = false
+        self.playSoundAtEnd.isEnabled = false
+        self.fadeInBreak.isEnabled = false
+        self.pauseAtMouseIdle.isEnabled = false
+        self.enableStandup.isEnabled = false
+        self.showTimeInMenu.isEnabled = true
+        // Delegates
+        self.launchAtStartup.target = self
+        self.playSoundAtEnd.target = self
+        self.fadeInBreak.target = self
+        self.pauseAtMouseIdle.target = self
+        self.enableStandup.target = self
+        self.showTimeInMenu.target = self
+
+        self.launchAtStartup.action = #selector(self.toggledSwitch(_:))
+        self.playSoundAtEnd.action = #selector(self.toggledSwitch(_:))
+        self.fadeInBreak.action = #selector(self.toggledSwitch(_:))
+        self.pauseAtMouseIdle.action = #selector(self.toggledSwitch(_:))
+        self.enableStandup.action = #selector(self.toggledSwitch(_:))
+        self.showTimeInMenu.action = #selector(self.toggledSwitch(_:))
+        // Initial values for switches
+        self.showTimeInMenu.state = Preferences.showTimeInMenuBar ? .on : .off
+    }
+
+    @objc
+    func toggledSwitch(_ sender: NSSwitch) {
+        if sender == self.showTimeInMenu {
+            Preferences.showTimeInMenuBar = self.showTimeInMenu.state == .on
+        } else {
+            assertionFailure("Not Implemented..!")
+        }
+    }
+
+    func setupAppearanceView() {
+        self.colorWell.target = self
+        self.colorWell.action = #selector(self.selectedColor(_:))
+        self.colorWell.color = NSColor(cgColor: Preferences.breakViewBackgroundColor) ?? .black
+        self.breakMessageTF.stringValue = Preferences.breakMessage
+    }
+
+    @IBAction func updateBreakMessage(_ sender: NSTextField) {
+        Preferences.breakMessage = sender.stringValue
+    }
+
+    @objc
+    func selectedColor(_ sender: NSColorWell) {
+        Preferences.breakViewBackgroundColor = self.colorWell.color.cgColor
+    }
+
+    @IBAction func showPreview(_ sender: NSButton) {
+        FullScreenWindowController.showBreakWindow()
+    }
+
+    @IBAction func updateWorkTime(_ sender: NSTextField) {
+        Preferences.workTimeMins = sender.integerValue
+    }
+
+    @IBAction func updateBreakTime(_ sender: NSTextField) {
+        Preferences.breakTimeSeconds = sender.integerValue
+    }
+
+    func setupScheduleView() {
+        self.workTimeMins.integerValue = Preferences.workTimeMins
+        self.breakTimeSeconds.integerValue = Preferences.breakTimeSeconds
     }
 
     func setupAboutView() {
