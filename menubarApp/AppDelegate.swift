@@ -21,12 +21,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem.button?.action = #selector(statusItemClicked)
 
         // Create and start Pomodoro timer
-        pomodoroTimer = PomodoroTimer(duration: TimeInterval(Preferences.workTimeMins * 60))
+        pomodoroTimer = PomodoroTimer(duration: TimeInterval(AppPreferences.shared.workTimeMins * 60))
         pomodoroTimer.delegate = self
         pomodoroTimer.start()
 
         timerViewController = TimerViewController(nibName: "TimerViewController", bundle: nil)
         timerViewController.timerDelegate = pomodoroTimer
+        self.setDefaultPreferences()
     }
 
     @objc func statusItemClicked(sender: NSStatusBarButton) {
@@ -41,7 +42,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return true
     }
 
-
+    private func setDefaultPreferences() {
+        UserDefaults.standard.register(defaults: [
+            "ShowTimeInMenuBar": true,
+            "BreakViewBackgroundColor": CGColor.black.components ?? [],
+            "WorkTimeMins": 20,
+            "BreakTimeSeconds": 20,
+            "BreakMessage": "Take a Break.!"
+        ])
+    }
 }
 
 extension AppDelegate: PomodoroTimerDelegate {
@@ -49,7 +58,7 @@ extension AppDelegate: PomodoroTimerDelegate {
         // Update button title with remaining time
         let minutes = Int(remainingTime) / 60
         let seconds = Int(remainingTime) % 60
-        if Preferences.showTimeInMenuBar {
+        if AppPreferences.shared.showTimeInMenuBar {
             statusItem.button?.title = String(format: "%02d:%02d", minutes, seconds)
         } else {
             statusItem.button?.title = ""

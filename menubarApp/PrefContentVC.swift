@@ -100,13 +100,13 @@ class PrefContentVC: NSViewController {
         self.enableStandup.action = #selector(self.toggledSwitch(_:))
         self.showTimeInMenu.action = #selector(self.toggledSwitch(_:))
         // Initial values for switches
-        self.showTimeInMenu.state = Preferences.showTimeInMenuBar ? .on : .off
+        self.showTimeInMenu.state = AppPreferences.shared.showTimeInMenuBar ? .on : .off
     }
 
     @objc
     func toggledSwitch(_ sender: NSSwitch) {
         if sender == self.showTimeInMenu {
-            Preferences.showTimeInMenuBar = self.showTimeInMenu.state == .on
+            AppPreferences.shared.showTimeInMenuBar = self.showTimeInMenu.state == .on
         } else {
             assertionFailure("Not Implemented..!")
         }
@@ -115,17 +115,17 @@ class PrefContentVC: NSViewController {
     func setupAppearanceView() {
         self.colorWell.target = self
         self.colorWell.action = #selector(self.selectedColor(_:))
-        self.colorWell.color = NSColor(cgColor: Preferences.breakViewBackgroundColor) ?? .black
-        self.breakMessageTF.stringValue = Preferences.breakMessage
+        self.colorWell.color = NSColor(cgColor: AppPreferences.shared.breakViewBackgroundColor) ?? .black
+        self.breakMessageTF.stringValue = AppPreferences.shared.breakMessage
     }
 
     @IBAction func updateBreakMessage(_ sender: NSTextField) {
-        Preferences.breakMessage = sender.stringValue
+        AppPreferences.shared.breakMessage = sender.stringValue
     }
 
     @objc
     func selectedColor(_ sender: NSColorWell) {
-        Preferences.breakViewBackgroundColor = self.colorWell.color.cgColor
+        AppPreferences.shared.breakViewBackgroundColor = self.colorWell.color.cgColor
     }
 
     @IBAction func showPreview(_ sender: NSButton) {
@@ -133,16 +133,16 @@ class PrefContentVC: NSViewController {
     }
 
     @IBAction func updateWorkTime(_ sender: NSTextField) {
-        Preferences.workTimeMins = sender.integerValue
+        AppPreferences.shared.workTimeMins = sender.integerValue
     }
 
     @IBAction func updateBreakTime(_ sender: NSTextField) {
-        Preferences.breakTimeSeconds = sender.integerValue
+        AppPreferences.shared.breakTimeSeconds = sender.integerValue
     }
 
     func setupScheduleView() {
-        self.workTimeMins.integerValue = Preferences.workTimeMins
-        self.breakTimeSeconds.integerValue = Preferences.breakTimeSeconds
+        self.workTimeMins.integerValue = AppPreferences.shared.workTimeMins
+        self.breakTimeSeconds.integerValue = AppPreferences.shared.breakTimeSeconds
     }
 
     func setupAboutView() {

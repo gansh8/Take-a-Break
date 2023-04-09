@@ -18,9 +18,9 @@ class BreakViewController: NSViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.wantsLayer = true
-        self.view.layer?.backgroundColor = Preferences.breakViewBackgroundColor
+        self.view.layer?.backgroundColor = AppPreferences.shared.breakViewBackgroundColor
         if self.autoClose {
-            self.remainingTime = TimeInterval(Preferences.breakTimeSeconds)
+            self.remainingTime = TimeInterval(AppPreferences.shared.breakTimeSeconds)
             // start timer
             timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
                 // Update remaining time and call delegate method
@@ -32,7 +32,7 @@ class BreakViewController: NSViewController {
                 }
             }
         }
-        self.mainContent.stringValue = Preferences.breakMessage
+        self.mainContent.stringValue = AppPreferences.shared.breakMessage
     }
     
     @IBAction func closeTheBreak(_ sender: NSButton) {
