@@ -115,15 +115,15 @@ class CircularProgressBarView: NSView {
     override func draw(_ dirtyRect: NSRect) {
         let center = CGPoint(x: bounds.width / 2, y: bounds.height / 2)
         let radius = min(bounds.width, bounds.height) / 2 - 5
-        let startAngle = -CGFloat.pi / 2
-        let endAngle = startAngle + progress * 2 * CGFloat.pi
+        let startAngle = 90.0 + 360 * (1 - progress)
+        let endAngle = 90.0
         let pathg = NSBezierPath()
         pathg.appendArc(withCenter: center, radius: radius, startAngle: -90.0, endAngle: 270, clockwise: false)
         NSColor.gray.setStroke()
         pathg.stroke()
 
         let path = NSBezierPath()
-        path.appendArc(withCenter: center, radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: true)
+        path.appendArc(withCenter: center, radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: false)
         NSColor.red.setStroke()
         path.stroke()
     }

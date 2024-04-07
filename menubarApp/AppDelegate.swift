@@ -64,8 +64,7 @@ extension AppDelegate: PomodoroTimerDelegate {
             statusItem.button?.title = ""
         }
         timerViewController.updateTimeLabel(String(format: "%02d:%02d", minutes, seconds))
-//        timerViewController.updateProgressIndicator(remainingTime / Double(pomodoroTimer.duration))
-        timerViewController.updateProgressIndicator(Double(seconds)  / 60.0 * 100.0)
+        timerViewController.updateProgressIndicator(remainingTime / Double(timer.duration))
     }
 
     func pomodoroTimerDidFinish(_ timer: PomodoroTimer) {

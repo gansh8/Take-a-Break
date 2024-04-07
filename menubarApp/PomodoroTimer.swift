@@ -14,7 +14,7 @@ protocol PomodoroTimerDelegate: AnyObject {
 
 class PomodoroTimer {
     weak var delegate: PomodoroTimerDelegate?
-    private var duration: TimeInterval
+    private(set) var duration: TimeInterval
     private var remainingTime: TimeInterval
     private var timer: Timer?
     private var isPaused = false
