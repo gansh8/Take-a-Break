@@ -51,6 +51,8 @@ class TimerViewController: NSViewController {
                 fatalError("Unable to load preferences window controller.")
             }
             windowController.showWindow(self)
+            windowController.window?.makeMain()
+            windowController.window?.orderFrontRegardless()
         }
         print("Menu item selected: \(sender.title)")
     }
