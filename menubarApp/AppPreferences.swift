@@ -7,8 +7,9 @@
 
 import CoreGraphics
 import Foundation
+import SwiftUI
 
-class AppPreferences {
+class AppPreferences: ObservableObject {
     static var shared = AppPreferences()
 
     private var _showTimeInMenuBar: Bool = true
@@ -62,6 +63,72 @@ class AppPreferences {
             return self._breakMessage
         }
     }
+    
+    private var _launchAtStartup = false
+    var launchAtStartup: Bool {
+        set {
+            self._launchAtStartup = newValue
+            UserDefaults.standard.set(newValue, forKey: "LaunchAtStartup")
+        }
+        get {
+            return self._launchAtStartup
+        }
+    }
+    
+    private var _playSoundAtEnd = false
+    var playSoundAtEnd: Bool {
+        set {
+            self._playSoundAtEnd = newValue
+            UserDefaults.standard.set(newValue, forKey: "PlaySoundAtEnd")
+        }
+        get {
+            return self._playSoundAtEnd
+        }
+    }
+    
+    private var _fadeInBreak = false
+    var fadeInBreak: Bool {
+        set {
+            self._fadeInBreak = newValue
+            UserDefaults.standard.set(newValue, forKey: "FadeInBreak")
+        }
+        get {
+            return self._fadeInBreak
+        }
+    }
+    
+    private var _pauseAtMouseIdle = false
+    var pauseAtMouseIdle: Bool {
+        set {
+            self._pauseAtMouseIdle = newValue
+            UserDefaults.standard.set(newValue, forKey: "PauseAtMouseIdle")
+        }
+        get {
+            return self._pauseAtMouseIdle
+        }
+    }
+    
+    private var _enableStandupBreak = false
+    var enableStandupBreak: Bool {
+        set {
+            self._enableStandupBreak = newValue
+            UserDefaults.standard.set(newValue, forKey: "EnableStandupBreak")
+        }
+        get {
+            return self._enableStandupBreak
+        }
+    }
+    
+    private var _adaptiveStatusBar = true
+    var adaptiveStatusBar: Bool {
+        set {
+            self._adaptiveStatusBar = newValue
+            UserDefaults.standard.set(newValue, forKey: "AdaptiveStatusBar")
+        }
+        get {
+            return self._adaptiveStatusBar
+        }
+    }
 
     private init() {
         self.getAllValuesFromUserDefaults()
@@ -82,6 +149,24 @@ class AppPreferences {
         }
         if let value = UserDefaults.standard.object(forKey: "BreakMessage") as? String {
             self._breakMessage = value
+        }
+        if let value = UserDefaults.standard.object(forKey: "LaunchAtStartup") as? Bool {
+            self._launchAtStartup = value
+        }
+        if let value = UserDefaults.standard.object(forKey: "PlaySoundAtEnd") as? Bool {
+            self._playSoundAtEnd = value
+        }
+        if let value = UserDefaults.standard.object(forKey: "FadeInBreak") as? Bool {
+            self._fadeInBreak = value
+        }
+        if let value = UserDefaults.standard.object(forKey: "PauseAtMouseIdle") as? Bool {
+            self._pauseAtMouseIdle = value
+        }
+        if let value = UserDefaults.standard.object(forKey: "EnableStandupBreak") as? Bool {
+            self._enableStandupBreak = value
+        }
+        if let value = UserDefaults.standard.object(forKey: "AdaptiveStatusBar") as? Bool {
+            self._adaptiveStatusBar = value
         }
     }
 }
