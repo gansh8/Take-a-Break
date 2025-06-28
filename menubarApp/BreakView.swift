@@ -46,6 +46,8 @@ struct BreakView: View {
                     }
                     
                     Button("Skip") {
+                        timer?.invalidate()
+                        timer = nil
                         onClose()
                     }
                     .font(.system(size: 16))
@@ -138,7 +140,10 @@ class BreakWindowController: NSObject, ObservableObject {
     }
     
     func closeBreakWindow() {
-        window?.close()
-        window = nil
+		Task.detached {[weak self] in
+			guard self?.window != nil else { return }
+			await self?.window?.close()
+			self?.window = nil
+		}
     }
 }
