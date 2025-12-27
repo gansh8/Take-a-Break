@@ -454,21 +454,24 @@ class PreferencesWindowController: NSObject, ObservableObject {
         if window == nil {
             let preferencesView = PreferencesView()
             let hostingController = NSHostingController(rootView: preferencesView)
-            
+
             window = NSWindow(
                 contentRect: NSRect(x: 0, y: 0, width: 650, height: 450),
                 styleMask: [.titled, .closable, .fullSizeContentView],
                 backing: .buffered,
                 defer: false
             )
-            
+
             window?.title = "Preferences"
             window?.contentViewController = hostingController
             window?.center()
             window?.setFrameAutosaveName("PreferencesWindow")
         }
-        
-        window?.makeKeyAndOrderFront(nil)
+
+        // Activate app and bring window to front
         NSApp.activate(ignoringOtherApps: true)
+        window?.makeKeyAndOrderFront(nil)
+        window?.orderFrontRegardless()
+        window?.makeMain()
     }
 }
