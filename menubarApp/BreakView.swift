@@ -178,21 +178,23 @@ class BreakWindowController: NSObject, ObservableObject {
     private var window: NSWindow?
     
     func showBreakWindow() {
-        closeBreakWindow()
-        
+        // Close existing window synchronously
+        window?.close()
+        window = nil
+
         let breakView = BreakView {
             self.closeBreakWindow()
         }
-        
+
         let hostingController = NSHostingController(rootView: breakView)
-        
+
         window = NSWindow(
             contentRect: NSScreen.main?.frame ?? .zero,
             styleMask: [.borderless, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
-        
+
         window?.contentViewController = hostingController
         window?.level = .screenSaver
         window?.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
@@ -200,18 +202,15 @@ class BreakWindowController: NSObject, ObservableObject {
         window?.backgroundColor = NSColor.clear
         window?.ignoresMouseEvents = false
         window?.makeKeyAndOrderFront(nil)
-        
+
         // Enter fullscreen
         if let screen = NSScreen.main {
             window?.setFrame(screen.frame, display: true)
         }
     }
-    
+
     func closeBreakWindow() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            self.window?.close()
-            self.window = nil
-        }
+        window?.close()
+        window = nil
     }
 }
