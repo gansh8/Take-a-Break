@@ -12,47 +12,52 @@ struct BreakView: View {
     @State private var timer: Timer?
     @State private var opacity: Double = 0.0
     @State private var showContent = false
+    @State private var currentInstructionIndex = 0
+    @State private var selectedPreset: BreakPreset
     let onClose: () -> Void
+
+    init(onClose: @escaping () -> Void) {
+        self.onClose = onClose
+        _selectedPreset = State(initialValue: AppPreferences.shared.selectedBreakPreset)
+    }
     
     var body: some View {
         ZStack {
-            Color(NSColor(cgColor: AppPreferences.shared.breakViewBackgroundColor) ?? NSColor.black)
+            // Use preset background color, or preferences color for custom
+            (selectedPreset.id == "custom"
+                ? Color(NSColor(cgColor: AppPreferences.shared.breakViewBackgroundColor) ?? NSColor.black)
+                : selectedPreset.backgroundColor)
                 .ignoresSafeArea()
                 .opacity(opacity)
-            
+
             if showContent {
                 VStack(spacing: 50) {
-                    if AppPreferences.shared.enableStandupBreak {
-                        VStack(spacing: 20) {
-                            Image(systemName: "figure.walk")
-                                .font(.system(size: 60))
-                                .foregroundColor(.white)
-                            
-                            Text("Time to Stand Up!")
-                                .font(.system(size: 80, weight: .medium))
-                                .foregroundColor(.white)
-                                .multilineTextAlignment(.center)
-                            
-                            Text("Take a moment to stretch and move around")
-                                .font(.system(size: 24))
-                                .foregroundColor(.white.opacity(0.8))
-                                .multilineTextAlignment(.center)
-                        }
-                    } else {
+                    if selectedPreset.id == "custom" {
+                        // Custom message view
                         Text(AppPreferences.shared.breakMessage)
                             .font(.system(size: 100, weight: .medium))
                             .foregroundColor(.white)
                             .multilineTextAlignment(.center)
+                    } else {
+                        // Preset activity view - simplified
+                        presetActivityContent
                     }
-                    
-                    Button("Skip") {
+
+                    Button(action: {
                         timer?.invalidate()
                         timer = nil
                         onClose()
+                    }) {
+                        HStack(spacing: 8) {
+                            Text("Skip")
+                            Text("(ESC)")
+                                .font(.system(size: 12))
+                                .opacity(0.7)
+                        }
                     }
                     .font(.system(size: 16))
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 10)
                     .background(Color.white.opacity(0.2))
                     .foregroundColor(.white)
                     .cornerRadius(8)
@@ -64,13 +69,65 @@ struct BreakView: View {
         }
         .onAppear {
             setupFadeInAndAutoClose()
+            startInstructionAnimation()
         }
         .onDisappear {
             timer?.invalidate()
             timer = nil
         }
     }
-    
+
+    private var presetActivityContent: some View {
+        VStack(spacing: 30) {
+            // Icon with background
+            ZStack {
+                Circle()
+                    .fill(.white.opacity(0.15))
+                    .frame(width: 140, height: 140)
+
+                Image(systemName: selectedPreset.iconName)
+                    .font(.system(size: 70))
+                    .foregroundColor(.white)
+            }
+
+            // Title
+            Text(selectedPreset.title)
+                .font(.system(size: 60, weight: .semibold))
+                .foregroundColor(.white)
+
+            // Subtitle
+            Text(selectedPreset.subtitle)
+                .font(.system(size: 24))
+                .foregroundColor(.white.opacity(0.9))
+
+            // Instructions list
+            if !selectedPreset.instructions.isEmpty {
+                VStack(alignment: .leading, spacing: 16) {
+                    ForEach(0..<selectedPreset.instructions.count, id: \.self) { index in
+                        HStack(alignment: .top, spacing: 16) {
+                            ZStack {
+                                Circle()
+                                    .fill(.white.opacity(0.2))
+                                    .frame(width: 32, height: 32)
+
+                                Text("\(index + 1)")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(.white)
+                            }
+
+                            Text(selectedPreset.instructions[index])
+                                .font(.system(size: 20))
+                                .foregroundColor(.white.opacity(0.95))
+                        }
+                        .opacity(currentInstructionIndex >= index ? 1.0 : 0.5)
+                    }
+                }
+                .frame(maxWidth: 600)
+                .padding(.horizontal, 40)
+            }
+        }
+    }
+
     private func setupFadeInAndAutoClose() {
         remainingTime = TimeInterval(AppPreferences.shared.breakTimeSeconds)
         
@@ -102,48 +159,95 @@ struct BreakView: View {
             }
         }
     }
+
+    private func startInstructionAnimation() {
+        let instructions = selectedPreset.instructions
+        guard !instructions.isEmpty else { return }
+
+        // Calculate time per instruction
+        let totalTime = TimeInterval(AppPreferences.shared.breakTimeSeconds)
+        guard totalTime > 0 && instructions.count > 0 else { return }
+
+        let timePerInstruction = totalTime / Double(instructions.count)
+
+        // Highlight each instruction progressively
+        for index in 0..<instructions.count {
+            let delay = timePerInstruction * Double(index) + 1.0 // Add delay after content shows
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    currentInstructionIndex = index
+                }
+            }
+        }
+    }
 }
 
 // Window controller for fullscreen break window
 class BreakWindowController: NSObject, ObservableObject {
     static let shared = BreakWindowController()
     private var window: NSWindow?
-    
+
     func showBreakWindow() {
-        closeBreakWindow()
-        
+        // Close existing window synchronously
+        window?.close()
+        window = nil
+
         let breakView = BreakView {
             self.closeBreakWindow()
         }
-        
+
         let hostingController = NSHostingController(rootView: breakView)
-        
-        window = NSWindow(
+
+        let breakWindow = BreakWindow(
             contentRect: NSScreen.main?.frame ?? .zero,
             styleMask: [.borderless, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
-        
-        window?.contentViewController = hostingController
-        window?.level = .screenSaver
-        window?.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
-        window?.isOpaque = false
-        window?.backgroundColor = NSColor.clear
-        window?.ignoresMouseEvents = false
-        window?.makeKeyAndOrderFront(nil)
-        
+
+        breakWindow.onEscape = {
+            self.closeBreakWindow()
+        }
+
+        breakWindow.contentViewController = hostingController
+        breakWindow.level = .screenSaver
+        breakWindow.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        breakWindow.isOpaque = false
+        breakWindow.backgroundColor = NSColor.clear
+        breakWindow.ignoresMouseEvents = false
+        breakWindow.makeKeyAndOrderFront(nil)
+
         // Enter fullscreen
         if let screen = NSScreen.main {
-            window?.setFrame(screen.frame, display: true)
+            breakWindow.setFrame(screen.frame, display: true)
+        }
+
+        window = breakWindow
+    }
+
+    func closeBreakWindow() {
+        window?.close()
+        window = nil
+    }
+}
+
+// Custom window subclass to handle ESC key
+class BreakWindow: NSWindow {
+    var onEscape: (() -> Void)?
+
+    override func keyDown(with event: NSEvent) {
+        if event.keyCode == 53 { // ESC key
+            onEscape?()
+        } else {
+            super.keyDown(with: event)
         }
     }
-    
-    func closeBreakWindow() {
-        Task.detached {[weak self] in
-            guard self?.window != nil else { return }
-            await self?.window?.close()
-            self?.window = nil
-        }
+
+    override var canBecomeKey: Bool {
+        return true
+    }
+
+    override var canBecomeMain: Bool {
+        return true
     }
 }
