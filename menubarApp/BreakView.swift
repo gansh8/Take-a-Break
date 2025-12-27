@@ -215,7 +215,7 @@ class BreakWindowController: NSObject, ObservableObject {
         breakWindow.isOpaque = false
         breakWindow.backgroundColor = NSColor.clear
         breakWindow.ignoresMouseEvents = false
-        breakWindow.makeKeyAndOrderFront(nil)
+        breakWindow.isReleasedWhenClosed = false
 
         // Enter fullscreen
         if let screen = NSScreen.main {
@@ -223,11 +223,18 @@ class BreakWindowController: NSObject, ObservableObject {
         }
 
         window = breakWindow
+
+        // Activate and make key window
+        NSApp.activate(ignoringOtherApps: true)
+        breakWindow.makeKeyAndOrderFront(nil)
+        breakWindow.orderFrontRegardless()
     }
 
     func closeBreakWindow() {
-        window?.close()
-        window = nil
+        DispatchQueue.main.async { [weak self] in
+            self?.window?.close()
+            self?.window = nil
+        }
     }
 }
 
