@@ -140,11 +140,17 @@ extension AppDelegate: PomodoroTimerDelegate {
                 print("Error displaying notification: \(error.localizedDescription)")
             }
         }
-        
+
         // Play sound if enabled
         if AppPreferences.shared.playSoundAtEnd {
             playBreakEndSound()
         }
+
+        // Show break window automatically
+        BreakWindowController.shared.showBreakWindow()
+
+        // Record session completion
+        SessionStatistics.shared.recordSessionComplete()
 
         // SwiftUI views are updated via notifications in PomodoroTimer
     }
@@ -306,15 +312,12 @@ extension AppDelegate: PomodoroTimerDelegate {
     }
     
     private func getAvailableStatusBarWidth() -> CGFloat {
-        // Get the status bar and calculate available space
-        let statusBar = NSStatusBar.system
-        
         // Estimate available width (conservative approach)
         // Account for other status bar items and system controls
         let screenWidth = NSScreen.main?.frame.width ?? 1920
         let estimatedOtherItemsWidth: CGFloat = 400 // Conservative estimate for other menu bar items
         let maxAllowedWidth: CGFloat = 120 // Maximum width we want for our item
-        
+
         let availableWidth = min(maxAllowedWidth, screenWidth - estimatedOtherItemsWidth)
         return max(availableWidth, 60) // Minimum width to ensure icon-only mode works
     }

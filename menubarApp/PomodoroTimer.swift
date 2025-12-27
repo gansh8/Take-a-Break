@@ -19,10 +19,12 @@ class PomodoroTimer: ObservableObject {
     private var remainingTime: TimeInterval
     private var timer: Timer?
     private var isPaused = false
+    private var lastSaveTime: Date?
 
     init(duration: TimeInterval) {
         self.duration = duration
         self.remainingTime = duration
+        restoreState()
     }
 
     func start() {
@@ -32,7 +34,7 @@ class PomodoroTimer: ObservableObject {
             // Update remaining time and call delegate method
             self.remainingTime -= 1
             self.delegate?.pomodoroTimer(self, didUpdateRemainingTime: self.remainingTime)
-            
+
             // Post notification for SwiftUI views
             NotificationCenter.default.post(
                 name: .pomodoroTimerUpdate,
@@ -42,6 +44,11 @@ class PomodoroTimer: ObservableObject {
                     "duration": self.duration
                 ]
             )
+
+            // Save state every 5 seconds to avoid excessive writes
+            if Int(self.remainingTime) % 5 == 0 {
+                self.saveState()
+            }
 
             // Stop timer when time runs out
             if self.remainingTime <= 0 {
@@ -64,10 +71,16 @@ class PomodoroTimer: ObservableObject {
             self.isPaused = true
             timer?.invalidate()
             timer = nil
+            saveState()
         } else {
             self.isPaused = false
             self.start()
         }
+        NotificationCenter.default.post(
+            name: .pomodoroTimerPausedChanged,
+            object: self,
+            userInfo: ["isPaused": self.isPaused]
+        )
     }
     
     func pauseForIdle() {
@@ -87,5 +100,49 @@ class PomodoroTimer: ObservableObject {
     
     var isTimerPaused: Bool {
         return isPaused
+    }
+
+    // MARK: - Timer Persistence
+    private func saveState() {
+        UserDefaults.standard.set(remainingTime, forKey: "TimerRemainingTime")
+        UserDefaults.standard.set(isPaused, forKey: "TimerIsPaused")
+        UserDefaults.standard.set(Date(), forKey: "TimerLastSaveTime")
+    }
+
+    private func restoreState() {
+        guard let lastSave = UserDefaults.standard.object(forKey: "TimerLastSaveTime") as? Date else {
+            return
+        }
+
+        let savedRemainingTime = UserDefaults.standard.double(forKey: "TimerRemainingTime")
+        let wasPaused = UserDefaults.standard.bool(forKey: "TimerIsPaused")
+
+        // Only restore if saved within last 24 hours
+        let timeSinceSave = Date().timeIntervalSince(lastSave)
+        guard timeSinceSave < 86400 else {
+            clearSavedState()
+            return
+        }
+
+        if wasPaused {
+            // If timer was paused, restore exact remaining time
+            remainingTime = savedRemainingTime
+            isPaused = true
+        } else {
+            // If timer was running, account for elapsed time
+            let adjustedRemainingTime = savedRemainingTime - timeSinceSave
+            if adjustedRemainingTime > 0 {
+                remainingTime = adjustedRemainingTime
+            } else {
+                // Timer would have finished while app was closed
+                remainingTime = duration
+            }
+        }
+    }
+
+    private func clearSavedState() {
+        UserDefaults.standard.removeObject(forKey: "TimerRemainingTime")
+        UserDefaults.standard.removeObject(forKey: "TimerIsPaused")
+        UserDefaults.standard.removeObject(forKey: "TimerLastSaveTime")
     }
 }

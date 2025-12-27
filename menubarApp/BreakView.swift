@@ -140,10 +140,10 @@ class BreakWindowController: NSObject, ObservableObject {
     }
     
     func closeBreakWindow() {
-		Task.detached {[weak self] in
-			guard self?.window != nil else { return }
-			await self?.window?.close()
-			self?.window = nil
-		}
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self, let window = self.window else { return }
+            window.close()
+            self.window = nil
+        }
     }
 }

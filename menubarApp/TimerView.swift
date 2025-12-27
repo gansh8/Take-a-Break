@@ -9,25 +9,54 @@ import SwiftUI
 
 struct TimerView: View {
     @ObservedObject var pomodoroTimer: PomodoroTimer
+    @ObservedObject private var stats = SessionStatistics.shared
     @State private var timeString = "25:00"
     @State private var progress: Double = 1.0
     @State private var isPaused = false
-    
+    @FocusState private var isFocused: Bool
+
     var body: some View {
         VStack(spacing: 20) {
             // Progress circle with time
             ZStack {
                 CircularProgressView(progress: progress)
                     .frame(width: 200, height: 200)
-                
+
                 Text(timeString)
                     .font(.system(size: 22, weight: .medium, design: .monospaced))
                     .foregroundColor(.primary)
             }
-            
-            Text("After work, take a 30s break")
-                .font(.system(size: 13))
-                .foregroundColor(.secondary)
+
+            // Statistics display
+            HStack(spacing: 20) {
+                VStack(spacing: 4) {
+                    Text("\(stats.todaySessionCount)")
+                        .font(.system(size: 18, weight: .semibold))
+                    Text("Today")
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                }
+
+                VStack(spacing: 4) {
+                    Text("\(stats.currentStreak)")
+                        .font(.system(size: 18, weight: .semibold))
+                    Text("Streak")
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                }
+
+                VStack(spacing: 4) {
+                    Text("\(stats.totalSessionCount)")
+                        .font(.system(size: 18, weight: .semibold))
+                    Text("Total")
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                }
+            }
+            .padding(.vertical, 8)
+            .padding(.horizontal, 16)
+            .background(Color.secondary.opacity(0.1))
+            .cornerRadius(8)
             
             // Control buttons
             HStack(spacing: 20) {
@@ -35,22 +64,31 @@ struct TimerView: View {
                     Image(systemName: "arrow.clockwise")
                         .font(.title2)
                         .foregroundColor(.primary)
+                        .frame(width: 44, height: 44)
+                        .background(Color.secondary.opacity(0.1))
+                        .clipShape(Circle())
                 }
                 .buttonStyle(PlainButtonStyle())
-                
+                .help("Reset timer (⌘R)")
+
                 Button(action: togglePause) {
-                    Image(systemName: isPaused ? "play.circle" : "pause.circle")
-                        .font(.title2)
-                        .foregroundColor(.primary)
+                    Image(systemName: isPaused ? "play.circle.fill" : "pause.circle.fill")
+                        .font(.system(size: 36))
+                        .foregroundColor(.accentColor)
                 }
                 .buttonStyle(PlainButtonStyle())
-                
+                .help("Pause/Resume (Space)")
+
                 Button(action: nextTimer) {
                     Image(systemName: "forward.circle")
                         .font(.title2)
                         .foregroundColor(.primary)
+                        .frame(width: 44, height: 44)
+                        .background(Color.secondary.opacity(0.1))
+                        .clipShape(Circle())
                 }
                 .buttonStyle(PlainButtonStyle())
+                .help("Start break (Return)")
             }
             .padding(.bottom, 10)
         }
@@ -83,25 +121,42 @@ struct TimerView: View {
         .onReceive(NotificationCenter.default.publisher(for: .pomodoroTimerFinished)) { _ in
             timeString = "25:00"
             progress = 1.0
+            isPaused = false
         }
+        .onReceive(NotificationCenter.default.publisher(for: .pomodoroTimerPausedChanged)) { notification in
+            if let userInfo = notification.userInfo,
+               let paused = userInfo["isPaused"] as? Bool {
+                isPaused = paused
+            }
+        }
+        .onAppear {
+            // Sync initial pause state
+            isPaused = pomodoroTimer.isTimerPaused
+            isFocused = true
+        }
+        .focusable()
+        .focused($isFocused)
     }
-    
+
     private func updateDisplay(remainingTime: TimeInterval, duration: TimeInterval) {
         let minutes = Int(remainingTime) / 60
         let seconds = Int(remainingTime) % 60
         timeString = String(format: "%02d:%02d", minutes, seconds)
-        progress = remainingTime / duration
+
+        withAnimation(.easeInOut(duration: 0.3)) {
+            progress = remainingTime / duration
+        }
     }
-    
+
     private func resetTimer() {
         pomodoroTimer.stop()
         pomodoroTimer.start()
         isPaused = false
     }
-    
+
     private func togglePause() {
         pomodoroTimer.pause()
-        isPaused.toggle()
+        isPaused = pomodoroTimer.isTimerPaused
     }
     
     private func nextTimer() {
@@ -138,17 +193,32 @@ struct TimerView: View {
 
 struct CircularProgressView: View {
     let progress: Double
-    
+
     var body: some View {
         ZStack {
             Circle()
-                .stroke(Color.gray.opacity(0.3), lineWidth: 8)
-            
+                .stroke(Color.gray.opacity(0.2), lineWidth: 10)
+
             Circle()
                 .trim(from: 0, to: CGFloat(progress))
-                .stroke(Color.red, style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                .stroke(
+                    LinearGradient(
+                        colors: [Color.green, Color.orange, Color.red],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    style: StrokeStyle(lineWidth: 10, lineCap: .round)
+                )
                 .rotationEffect(.degrees(-90))
-                .animation(.linear(duration: 0.1), value: progress)
+                .animation(.linear(duration: 0.3), value: progress)
+
+            // Add subtle shadow
+            Circle()
+                .trim(from: 0, to: CGFloat(progress))
+                .stroke(Color.black.opacity(0.1), lineWidth: 11)
+                .rotationEffect(.degrees(-90))
+                .blur(radius: 2)
+                .offset(y: 1)
         }
     }
 }
@@ -174,6 +244,7 @@ class TimerViewMenuHandler: NSObject {
 extension Notification.Name {
     static let pomodoroTimerUpdate = Notification.Name("pomodoroTimerUpdate")
     static let pomodoroTimerFinished = Notification.Name("pomodoroTimerFinished")
+    static let pomodoroTimerPausedChanged = Notification.Name("pomodoroTimerPausedChanged")
     static let setLaunchAtStartup = Notification.Name("setLaunchAtStartup")
     static let setMouseIdleMonitoring = Notification.Name("setMouseIdleMonitoring")
 }
