@@ -12,12 +12,13 @@ import AVFoundation
 import AudioToolbox
 import ServiceManagement
 
-class AppDelegate: NSObject, NSApplicationDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     var statusItem: NSStatusItem!
     var pomodoroTimer: PomodoroTimer!
     var popover: NSPopover!
     var audioPlayer: AVAudioPlayer?
-    
+    var eventMonitor: Any?
+
     // Status bar display management
     private enum StatusBarDisplayMode {
         case iconOnly
@@ -25,7 +26,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         case fullTime   // MM:SS with icon
     }
     private var currentDisplayMode: StatusBarDisplayMode = .fullTime
-    
+
     // Mouse idle monitoring
     private var mouseIdleTimer: Timer?
     private var isMouseIdleMonitoringEnabled = false
@@ -68,26 +69,63 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         popover = NSPopover()
         popover.contentSize = NSSize(width: 300, height: 406)
         popover.behavior = .transient
-        
+        popover.delegate = self
+
         let timerView = TimerView(pomodoroTimer: pomodoroTimer)
         popover.contentViewController = NSHostingController(rootView: timerView)
+    }
+
+    // MARK: - NSPopoverDelegate
+    func popoverShouldClose(_ popover: NSPopover) -> Bool {
+        return true
+    }
+
+    func popoverDidClose(_ notification: Notification) {
+        // Popover closed, nothing special needed
     }
     
     private func togglePopover() {
         if popover.isShown {
-            popover.performClose(nil)
+            closePopover()
         } else {
-            NSApplication.shared.activate(ignoringOtherApps: true)
-            popover.show(relativeTo: statusItem.button!.bounds, of: statusItem.button!, preferredEdge: .minY)
+            showPopover()
+        }
+    }
+
+    private func showPopover() {
+        NSApplication.shared.activate(ignoringOtherApps: true)
+        popover.show(relativeTo: statusItem.button!.bounds, of: statusItem.button!, preferredEdge: .minY)
+
+        // Add event monitor to detect clicks outside popover
+        eventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
+            if self?.popover.isShown == true {
+                self?.closePopover()
+            }
+        }
+    }
+
+    private func closePopover() {
+        popover.performClose(nil)
+
+        // Remove event monitor
+        if let monitor = eventMonitor {
+            NSEvent.removeMonitor(monitor)
+            eventMonitor = nil
         }
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
         // Cleanup notification observers
         NotificationCenter.default.removeObserver(self)
-        
+
         // Stop mouse idle monitoring
         setMouseIdleMonitoring(enabled: false)
+
+        // Remove event monitor
+        if let monitor = eventMonitor {
+            NSEvent.removeMonitor(monitor)
+            eventMonitor = nil
+        }
     }
 
     func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
