@@ -130,6 +130,17 @@ class AppPreferences: ObservableObject {
         }
     }
 
+    private var _autoRotatePresets = true
+    var autoRotatePresets: Bool {
+        set {
+            self._autoRotatePresets = newValue
+            UserDefaults.standard.set(newValue, forKey: "AutoRotatePresets")
+        }
+        get {
+            return self._autoRotatePresets
+        }
+    }
+
     private var _selectedBreakPresetId = "stretch"
     var selectedBreakPresetId: String {
         set {
@@ -142,7 +153,33 @@ class AppPreferences: ObservableObject {
     }
 
     var selectedBreakPreset: BreakPreset {
-        return BreakPreset.preset(withId: selectedBreakPresetId) ?? .stretch
+        if autoRotatePresets {
+            return getNextBreakPreset()
+        } else {
+            return BreakPreset.preset(withId: selectedBreakPresetId) ?? .stretch
+        }
+    }
+
+    private func getNextBreakPreset() -> BreakPreset {
+        // Get all presets except "custom"
+        let availablePresets = BreakPreset.allPresets.filter { $0.id != "custom" }
+
+        // Get current index
+        if let currentIndex = availablePresets.firstIndex(where: { $0.id == selectedBreakPresetId }) {
+            // Move to next preset, wrapping around to start
+            let nextIndex = (currentIndex + 1) % availablePresets.count
+            let nextPreset = availablePresets[nextIndex]
+
+            // Update selected preset for next time
+            selectedBreakPresetId = nextPreset.id
+
+            return nextPreset
+        } else {
+            // If current preset not found, start with first one
+            let firstPreset = availablePresets.first ?? .stretch
+            selectedBreakPresetId = firstPreset.id
+            return firstPreset
+        }
     }
 
     private init() {
@@ -185,6 +222,9 @@ class AppPreferences: ObservableObject {
         }
         if let value = UserDefaults.standard.object(forKey: "SelectedBreakPresetId") as? String {
             self._selectedBreakPresetId = value
+        }
+        if let value = UserDefaults.standard.object(forKey: "AutoRotatePresets") as? Bool {
+            self._autoRotatePresets = value
         }
     }
 }

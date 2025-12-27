@@ -18,6 +18,7 @@ struct BreakView: View {
 
     init(onClose: @escaping () -> Void) {
         self.onClose = onClose
+        // Get preset based on user preference (auto-rotate or fixed)
         _selectedPreset = State(initialValue: AppPreferences.shared.selectedBreakPreset)
     }
     
