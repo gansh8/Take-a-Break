@@ -100,18 +100,17 @@ struct GeneralPreferencesView: View {
                     .onChange(of: playSoundAtEnd) { newValue in
                         AppPreferences.shared.playSoundAtEnd = newValue
                     }
-                
+
                 Toggle("Fade in mask window", isOn: $fadeInBreak)
                     .onChange(of: fadeInBreak) { newValue in
                         AppPreferences.shared.fadeInBreak = newValue
                     }
-                
-                Toggle("Enable standup break", isOn: $enableStandup)
-                    .onChange(of: enableStandup) { newValue in
-                        AppPreferences.shared.enableStandupBreak = newValue
-                    }
             } header: {
                 Text("Break Behavior")
+            } footer: {
+                Text("Configure sound notifications and visual effects for break reminders.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
             
             Section {
@@ -202,55 +201,149 @@ struct SchedulePreferencesView: View {
 struct AppearancePreferencesView: View {
     @State private var backgroundColor = Color(NSColor(cgColor: AppPreferences.shared.breakViewBackgroundColor) ?? NSColor.black)
     @State private var breakMessage = AppPreferences.shared.breakMessage
-    
+    @State private var selectedPresetId = AppPreferences.shared.selectedBreakPresetId
+
     var body: some View {
         Form {
             Section {
                 VStack(alignment: .leading, spacing: 16) {
-                    HStack {
-                        Text("Background color:")
-                            .frame(minWidth: 120, alignment: .leading)
-                        
-                        ColorPicker("Background", selection: $backgroundColor, supportsOpacity: false)
-                            .labelsHidden()
-                            .frame(width: 50)
-                            .onChange(of: backgroundColor) { newColor in
-                                let nsColor = NSColor(newColor)
-                                AppPreferences.shared.breakViewBackgroundColor = nsColor.cgColor
+                    Text("Choose a break activity:")
+                        .font(.headline)
+
+                    // Preset grid
+                    LazyVGrid(columns: [
+                        GridItem(.flexible()),
+                        GridItem(.flexible())
+                    ], spacing: 12) {
+                        ForEach(BreakPreset.allPresets) { preset in
+                            BreakPresetCard(
+                                preset: preset,
+                                isSelected: selectedPresetId == preset.id
+                            ) {
+                                selectedPresetId = preset.id
+                                AppPreferences.shared.selectedBreakPresetId = preset.id
+
+                                // Update background color to match preset
+                                if preset.id != "custom" {
+                                    let nsColor = NSColor(preset.backgroundColor)
+                                    AppPreferences.shared.breakViewBackgroundColor = nsColor.cgColor
+                                    backgroundColor = preset.backgroundColor
+                                }
                             }
-                        
-                        Spacer()
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Break message:")
-                        
-                        TextField("Enter your break message", text: $breakMessage)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .onChange(of: breakMessage) { newValue in
-                                AppPreferences.shared.breakMessage = newValue
-                            }
-                    }
-                    
-                    HStack {
-                        Spacer()
-                        Button("Preview Break Screen") {
-                            BreakWindowController.shared.showBreakWindow()
                         }
-                        .buttonStyle(.borderedProminent)
                     }
                 }
-                .padding(.vertical, 4)
+                .padding(.vertical, 8)
             } header: {
-                Text("Break Screen Customization")
+                Text("Break Activity Presets")
             } footer: {
-                Text("Customize how the fullscreen break reminder appears. The preview will show your current settings.")
+                Text("Select a preset break activity with guided instructions, or choose Custom to use your own message.")
                     .font(.caption)
                     .foregroundColor(.secondary)
+            }
+
+            // Custom message section (only shown when Custom is selected)
+            if selectedPresetId == "custom" {
+                Section {
+                    VStack(alignment: .leading, spacing: 16) {
+                        HStack {
+                            Text("Background color:")
+                                .frame(minWidth: 120, alignment: .leading)
+
+                            ColorPicker("Background", selection: $backgroundColor, supportsOpacity: false)
+                                .labelsHidden()
+                                .frame(width: 50)
+                                .onChange(of: backgroundColor) { newColor in
+                                    let nsColor = NSColor(newColor)
+                                    AppPreferences.shared.breakViewBackgroundColor = nsColor.cgColor
+                                }
+
+                            Spacer()
+                        }
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Break message:")
+
+                            TextField("Enter your break message", text: $breakMessage)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .onChange(of: breakMessage) { newValue in
+                                    AppPreferences.shared.breakMessage = newValue
+                                }
+                        }
+                    }
+                    .padding(.vertical, 4)
+                } header: {
+                    Text("Custom Break Message")
+                }
+            }
+
+            Section {
+                HStack {
+                    Spacer()
+                    Button("Preview Break Screen") {
+                        BreakWindowController.shared.showBreakWindow()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    Spacer()
+                }
+                .padding(.vertical, 4)
             }
         }
         .formStyle(.grouped)
         .navigationTitle("Appearance")
+    }
+}
+
+struct BreakPresetCard: View {
+    let preset: BreakPreset
+    let isSelected: Bool
+    let onTap: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            VStack(spacing: 12) {
+                // Icon with background
+                ZStack {
+                    Circle()
+                        .fill(preset.backgroundColor.opacity(0.2))
+                        .frame(width: 60, height: 60)
+
+                    Image(systemName: preset.iconName)
+                        .font(.system(size: 28))
+                        .foregroundColor(preset.backgroundColor)
+                }
+
+                VStack(spacing: 4) {
+                    Text(preset.title)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.primary)
+
+                    if !preset.subtitle.isEmpty {
+                        Text(preset.subtitle)
+                            .font(.system(size: 10))
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+            .padding(.horizontal, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(isSelected ? Color.accentColor.opacity(0.1) : Color.secondary.opacity(0.05))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(
+                        isSelected ? Color.accentColor : Color.clear,
+                        lineWidth: 2
+                    )
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 
@@ -307,21 +400,33 @@ struct AboutPreferencesView: View {
                         HStack {
                             Image(systemName: "checkmark.circle.fill")
                                 .foregroundColor(.green)
+                            Text("Guided break activities with presets")
+                        }
+
+                        HStack {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
                             Text("Fullscreen break reminders")
                         }
-                        
+
+                        HStack {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
+                            Text("Session statistics and streaks")
+                        }
+
                         HStack {
                             Image(systemName: "checkmark.circle.fill")
                                 .foregroundColor(.green)
                             Text("Sound notifications")
                         }
-                        
+
                         HStack {
                             Image(systemName: "checkmark.circle.fill")
                                 .foregroundColor(.green)
                             Text("Mouse idle detection")
                         }
-                        
+
                         HStack {
                             Image(systemName: "checkmark.circle.fill")
                                 .foregroundColor(.green)

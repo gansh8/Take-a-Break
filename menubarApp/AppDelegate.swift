@@ -106,7 +106,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             "FadeInBreak": false,
             "PauseAtMouseIdle": false,
             "EnableStandupBreak": false,
-            "AdaptiveStatusBar": true
+            "AdaptiveStatusBar": true,
+            "SelectedBreakPresetId": "stretch"
         ])
     }
 }

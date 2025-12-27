@@ -130,6 +130,21 @@ class AppPreferences: ObservableObject {
         }
     }
 
+    private var _selectedBreakPresetId = "stretch"
+    var selectedBreakPresetId: String {
+        set {
+            self._selectedBreakPresetId = newValue
+            UserDefaults.standard.set(newValue, forKey: "SelectedBreakPresetId")
+        }
+        get {
+            return self._selectedBreakPresetId
+        }
+    }
+
+    var selectedBreakPreset: BreakPreset {
+        return BreakPreset.preset(withId: selectedBreakPresetId) ?? .stretch
+    }
+
     private init() {
         self.getAllValuesFromUserDefaults()
     }
@@ -167,6 +182,9 @@ class AppPreferences: ObservableObject {
         }
         if let value = UserDefaults.standard.object(forKey: "AdaptiveStatusBar") as? Bool {
             self._adaptiveStatusBar = value
+        }
+        if let value = UserDefaults.standard.object(forKey: "SelectedBreakPresetId") as? String {
+            self._selectedBreakPresetId = value
         }
     }
 }
