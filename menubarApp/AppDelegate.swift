@@ -153,6 +153,9 @@ extension AppDelegate: PomodoroTimerDelegate {
         // Record session completion
         SessionStatistics.shared.recordSessionComplete()
 
+        // Restart timer automatically after break
+        pomodoroTimer?.start()
+
         // SwiftUI views are updated via notifications in PomodoroTimer
     }
     
