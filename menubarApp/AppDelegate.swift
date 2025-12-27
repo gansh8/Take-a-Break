@@ -36,11 +36,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private let idleThreshold: TimeInterval = 30
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        // Use fixed length to prevent status bar item from moving
+        statusItem = NSStatusBar.system.statusItem(withLength: 70)
         statusItem.button?.image = NSImage(systemSymbolName: "clock", accessibilityDescription: nil)
         statusItem.button?.title = "25:00"
         statusItem.button?.target = self
         statusItem.button?.action = #selector(statusItemClicked)
+        statusItem.button?.imagePosition = .imageLeading
 
         // Create and start Pomodoro timer
         pomodoroTimer = PomodoroTimer(duration: TimeInterval(AppPreferences.shared.workTimeMins * 60))
@@ -293,28 +295,43 @@ extension AppDelegate: PomodoroTimerDelegate {
     // MARK: - Status bar display management
     private func updateStatusBarDisplay(minutes: Int, seconds: Int) {
         let timeString = String(format: "%02d:%02d", minutes, seconds)
-        
+
         // Check if adaptive display is enabled
         if AppPreferences.shared.adaptiveStatusBar {
             // Try different display modes based on available space
             if tryDisplayMode(.fullTime, timeString: timeString) {
-                currentDisplayMode = .fullTime
+                setDisplayMode(.fullTime, timeString: timeString)
             } else if tryDisplayMode(.shortTime, timeString: timeString) {
-                currentDisplayMode = .shortTime
+                setDisplayMode(.shortTime, timeString: timeString)
             } else {
-                // Fall back to icon only
-                currentDisplayMode = .iconOnly
-                statusItem.button?.title = ""
-                statusItem.button?.image = NSImage(systemSymbolName: "timer", accessibilityDescription: "Timer: \(timeString)")
-                statusItem.button?.toolTip = "Pomodoro Timer: \(timeString)"
+                setDisplayMode(.iconOnly, timeString: timeString)
             }
         } else {
             // Use full display mode (original behavior)
+            setDisplayMode(.fullTime, timeString: timeString)
+        }
+    }
+
+    private func setDisplayMode(_ mode: StatusBarDisplayMode, timeString: String) {
+        currentDisplayMode = mode
+
+        switch mode {
+        case .fullTime:
+            statusItem.length = 70 // Fixed width for icon + time
             statusItem.button?.image = NSImage(systemSymbolName: "clock", accessibilityDescription: nil)
             statusItem.button?.title = timeString
-            statusItem.button?.toolTip = "Pomodoro Timer: \(timeString)"
-            currentDisplayMode = .fullTime
+            statusItem.button?.imagePosition = .imageLeading
+        case .shortTime:
+            statusItem.length = 50 // Fixed width for time only
+            statusItem.button?.image = nil
+            statusItem.button?.title = timeString
+        case .iconOnly:
+            statusItem.length = 30 // Fixed width for icon only
+            statusItem.button?.title = ""
+            statusItem.button?.image = NSImage(systemSymbolName: "timer", accessibilityDescription: "Timer: \(timeString)")
         }
+
+        statusItem.button?.toolTip = "Pomodoro Timer: \(timeString)"
     }
     
     private func tryDisplayMode(_ mode: StatusBarDisplayMode, timeString: String) -> Bool {
