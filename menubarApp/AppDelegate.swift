@@ -316,14 +316,28 @@ extension AppDelegate: PomodoroTimerDelegate {
     }
     
     private func getAvailableStatusBarWidth() -> CGFloat {
-        // Estimate available width (conservative approach)
-        // Account for other status bar items and system controls
-        let screenWidth = NSScreen.main?.frame.width ?? 1920
-        let estimatedOtherItemsWidth: CGFloat = 400 // Conservative estimate for other menu bar items
-        let maxAllowedWidth: CGFloat = 120 // Maximum width we want for our item
+        // Try to get actual status bar position
+        guard let button = statusItem.button,
+              let window = button.window else {
+            return 100 // Default fallback
+        }
 
-        let availableWidth = min(maxAllowedWidth, screenWidth - estimatedOtherItemsWidth)
-        return max(availableWidth, 60) // Minimum width to ensure icon-only mode works
+        // Get the button's position in screen coordinates
+        let buttonFrame = window.convertToScreen(button.frame)
+        let screenWidth = NSScreen.main?.frame.width ?? 1920
+
+        // Calculate available space to the right edge of the screen
+        // This gives us a better estimate of actual available space
+        let distanceToEdge = screenWidth - buttonFrame.maxX
+
+        // If we're too close to the edge (less than 50pt), we're likely crowded
+        if distanceToEdge < 50 {
+            return 40 // Very limited space, use icon only
+        } else if distanceToEdge < 150 {
+            return 80 // Moderate space, might fit short time
+        } else {
+            return 120 // Plenty of space, use full display
+        }
     }
 }
 
